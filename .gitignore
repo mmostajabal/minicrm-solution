@@ -2,7 +2,8 @@
 credentials.bat
 *.env
 .env
-docker.env
+# docker.env is intentionally committed – pre-configured for Mock API, contains no real secrets
+!docker.env
 
 # User secrets
 **/appsettings.Development.json

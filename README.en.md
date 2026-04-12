@@ -304,53 +304,55 @@ Docker lets you run all backend services without installing .NET SDK — only [D
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows)
 
-### Step 1: Create your env file
+### Step 1: Start all services with Mock API (no real account needed)
+
+The `docker.env` file is already included in the repository, pre-configured to use the Mock API. No editing needed.
 
 ```bash
-copy docker.env.example docker.env
+docker compose --profile mock --env-file docker.env up -d --build
 ```
 
-Edit `docker.env` with your credentials:
+This starts: Mock API (5090), ContactService (5081), ProjectService (5082), TodoService (5083), InvoiceService (5084), Gateway (5080).
 
-```env
-MINICRM_SYSTEM_ID=YOUR_SYSTEM_ID
-MINICRM_API_KEY=YOUR_API_KEY
-GATEWAY_API_KEY=minicrm-gateway-2026-secure-key
-```
-
-> **What is `GATEWAY_API_KEY`?**
-> It is the secret key that protects the API Gateway. The default value is `minicrm-gateway-2026-secure-key` (set in `minicrm-gateway/appsettings.json`).
-> You will also need this key to authorize requests in the Swagger UI at http://localhost:5080/swagger — click the **Authorize** button and enter the key.
-> The same value must also be set in `minicrm-mcp/.env` and `claude_desktop_config.json` as `GATEWAY_API_KEY`.
-
-### Step 2: Build and start all services
-
-```bash
-docker compose --env-file docker.env up -d --build
-```
-
-This starts: ContactService (5081), ProjectService (5082), TodoService (5083), InvoiceService (5084), Gateway (5080).
-
-Wait until all containers are healthy — check with:
+Wait until all containers are running:
 
 ```bash
 docker compose --env-file docker.env ps
 ```
 
-### Step 3: Verify in Swagger
+### Step 2: Verify in Swagger
 
 Open http://localhost:5080/swagger in your browser.
 
-Click the **Authorize** button (top right), enter:
+Click the **Authorize** button (top right), enter the Gateway API key:
 ```
 minicrm-gateway-2026-secure-key
 ```
-Then try any endpoint — you should get a `200 OK` response.
 
-### Step 4: Start the MCP server (outside Docker)
+> **What is the Gateway API key?**
+> It is the secret key that protects the API Gateway. The value `minicrm-gateway-2026-secure-key` is the default set in `minicrm-gateway/appsettings.json` and pre-filled in `docker.env`.
+> The same value must also appear in `minicrm-mcp/.env` and `claude_desktop_config.json` as `GATEWAY_API_KEY`. If they don't match, the gateway returns **401 Unauthorized**.
+
+Click **Authorize**, then try an endpoint such as `GET /api/contacts` — you should see the 5 seeded test contacts.
+
+### Step 3: Start the MCP server (outside Docker)
 
 ```bash
 cd minicrm-mcp && npm start
+```
+
+### To use a real miniCRM account instead
+
+Edit `docker.env` and replace:
+```env
+MINICRM_SYSTEM_ID=YOUR_SYSTEM_ID
+MINICRM_API_KEY=YOUR_API_KEY
+# remove or comment out MINICRM_BASE_URL
+```
+
+Then start without the mock profile:
+```bash
+docker compose --env-file docker.env up -d --build
 ```
 
 ### Option: Use Mock API instead of real miniCRM

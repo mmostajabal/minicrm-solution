@@ -300,53 +300,55 @@ A Docker lehetővé teszi, hogy az összes backend szolgáltatást .NET SDK tele
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows)
 
-### 1. lépés: Env fájl létrehozása
+### 1. lépés: Servicek indítása Mock API-val (valós fiók nélkül)
+
+A `docker.env` fájl már megtalálható a repository-ban, előre konfigurálva a Mock API használatára. Nem kell szerkeszteni.
 
 ```bash
-copy docker.env.example docker.env
+docker compose --profile mock --env-file docker.env up -d --build
 ```
 
-Szerkeszd a `docker.env` fájlt a hitelesítő adataiddal:
+Ez elindítja: Mock API (5090), ContactService (5081), ProjectService (5082), TodoService (5083), InvoiceService (5084), Gateway (5080).
 
-```env
-MINICRM_SYSTEM_ID=A_TE_SYSTEM_ID_D
-MINICRM_API_KEY=A_TE_API_KULCSOD
-GATEWAY_API_KEY=minicrm-gateway-2026-secure-key
-```
-
-> **Mi az a `GATEWAY_API_KEY`?**
-> Ez a Gateway-t védő titkos kulcs. Az alapértelmezett értéke: `minicrm-gateway-2026-secure-key` (a `minicrm-gateway/appsettings.json` fájlban van beállítva).
-> Erre a kulcsra szükséged lesz a Swagger UI-ban is (http://localhost:5080/swagger) — kattints az **Authorize** gombra és add meg a kulcsot.
-> Ugyanezt az értéket kell beállítani a `minicrm-mcp/.env` fájlban és a `claude_desktop_config.json`-ban is `GATEWAY_API_KEY` névvel.
-
-### 2. lépés: Servicek build és indítás
-
-```bash
-docker compose --env-file docker.env up -d --build
-```
-
-Ez elindítja: ContactService (5081), ProjectService (5082), TodoService (5083), InvoiceService (5084), Gateway (5080).
-
-Várj, amíg minden container elindul — ellenőrzés:
+Várj, amíg minden container fut:
 
 ```bash
 docker compose --env-file docker.env ps
 ```
 
-### 3. lépés: Ellenőrzés Swaggerben
+### 2. lépés: Ellenőrzés Swaggerben
 
 Nyisd meg a http://localhost:5080/swagger oldalt a böngészőben.
 
-Kattints az **Authorize** gombra (jobb felül), add meg:
+Kattints az **Authorize** gombra (jobb felül), add meg a Gateway API kulcsot:
 ```
 minicrm-gateway-2026-secure-key
 ```
-Majd próbálj ki egy végpontot — `200 OK` választ kell kapnod.
 
-### 4. lépés: MCP szerver indítása (Dockeren kívül)
+> **Mi az a Gateway API kulcs?**
+> Ez a Gateway-t védő titkos kulcs. Az értéke `minicrm-gateway-2026-secure-key`, ami alapértelmezetten a `minicrm-gateway/appsettings.json` fájlban és a `docker.env`-ben van beállítva.
+> Ugyanezt az értéket kell megadni a `minicrm-mcp/.env` fájlban és a `claude_desktop_config.json`-ban is `GATEWAY_API_KEY` névvel. Ha nem egyeznek, a Gateway **401 Unauthorized** hibát ad.
+
+Kattints az **Authorize** gombra, majd próbálj ki egy végpontot, például `GET /api/contacts` — a 3 előre feltöltött teszt-kontaktot kell visszakapnod.
+
+### 3. lépés: MCP szerver indítása (Dockeren kívül)
 
 ```bash
 cd minicrm-mcp && npm start
+```
+
+### Valós miniCRM fiókkal való futtatáshoz
+
+Szerkeszd a `docker.env` fájlt:
+```env
+MINICRM_SYSTEM_ID=A_TE_SYSTEM_ID_D
+MINICRM_API_KEY=A_TE_API_KULCSOD
+# töröld vagy kommenteld ki a MINICRM_BASE_URL sort
+```
+
+Majd indítsd el mock profil nélkül:
+```bash
+docker compose --env-file docker.env up -d --build
 ```
 
 ### Opció: Mock API használata valós miniCRM helyett
