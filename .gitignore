@@ -1,0 +1,27 @@
+# Credentials – never commit these
+credentials.bat
+*.env
+.env
+
+# User secrets
+**/appsettings.Development.json
+**/secrets.json
+
+# Build output
+**/bin/
+**/obj/
+
+# VS Code
+.vscode/settings.json
+
+# Node
+minicrm-mcp/node_modules/
+minicrm-mcp/.env
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

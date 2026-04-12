@@ -1,0 +1,20 @@
+{
+  "name": "minicrm-mcp",
+  "version": "1.0.0",
+  "description": "miniCRM MCP Server – 12 CRM tools for Claude Desktop (Hungarian language support)",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.2",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.5",
+    "winston": "^3.17.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

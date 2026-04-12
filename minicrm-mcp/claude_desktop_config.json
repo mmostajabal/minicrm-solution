@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "minicrm": {
+      "command": "node",
+      "args": [
+        "PATH_TO_PROJECT/minicrm-mcp/src/index.js"
+      ],
+      "env": {
+        "GATEWAY_URL": "http://localhost:5080",
+        "GATEWAY_API_KEY": "2xv4qJEpPBa5gdwe1mSGR6YyIiWUNKjf",
+        "LANGUAGE_ID": "hu",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
