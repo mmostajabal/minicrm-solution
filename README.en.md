@@ -34,7 +34,7 @@ Install all of the following before running the application:
 | [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0+ | https://dotnet.microsoft.com/download/dotnet/10.0 | Required for VS Code Test Explorer only |
 | [Claude Desktop](https://claude.ai/download) | latest | https://claude.ai/download | Windows version |
 | [Git](https://git-scm.com/download/win) | any | https://git-scm.com/download/win | To clone this repository |
-| miniCRM account | Professional | https://app.minicrm.hu | Requires REST API add-on (or use Mock API) |
+| miniCRM account | Professional | https://www.minicrm.hu | Requires REST API add-on (or use Mock API) |
 
 > **Note:** .NET 10 SDK is only needed if you want to run tests inside VS Code Test Explorer.
 > Your application runs on .NET 8 — both SDKs can be installed side by side.

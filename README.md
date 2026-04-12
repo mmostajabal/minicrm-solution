@@ -34,7 +34,7 @@ Az alkalmazás futtatása előtt telepítsd az összes alábbi szoftvert:
 | [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0+ | https://dotnet.microsoft.com/download/dotnet/10.0 | Csak VS Code Test Explorer használatához kell |
 | [Claude Desktop](https://claude.ai/download) | legfrissebb | https://claude.ai/download | Windows verzió |
 | [Git](https://git-scm.com/download/win) | bármely | https://git-scm.com/download/win | A repository klónozásához |
-| miniCRM fiók | Professional | https://app.minicrm.hu | REST API add-on szükséges (vagy Mock API) |
+| miniCRM fiók | Professional | https://www.minicrm.hu | REST API add-on szükséges (vagy Mock API) |
 
 > **Megjegyzés:** A .NET 10 SDK csak akkor szükséges, ha VS Code Test Explorerben szeretnéd futtatni a teszteket.
 > Az alkalmazás .NET 8-on fut – mindkét SDK egymás mellett telepíthető.
