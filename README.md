@@ -1,6 +1,6 @@
 # miniCRM MCP Solution – Telepítési Útmutató
 
-> English version: [SETUP.en.md](SETUP.en.md)
+> English version: [README.en.md](README.en.md)
 
 ## Architektúra áttekintése
 

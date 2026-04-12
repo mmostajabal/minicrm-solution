@@ -1,6 +1,6 @@
 # miniCRM MCP Solution – Setup Guide
 
-> Magyar verzió: [README.md](README.md)
+> Hungarian version: [README.md](README.md)
 
 ## Architecture overview
 
