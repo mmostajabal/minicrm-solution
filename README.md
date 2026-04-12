@@ -290,6 +290,69 @@ REM SET MINICRM__BaseUrl=http://localhost:5090
 
 ---
 
+## Futtatás Dockerrel
+
+A Docker lehetővé teszi, hogy az összes backend szolgáltatást .NET SDK telepítése nélkül futtasd — csak a [Docker Desktop](https://www.docker.com/products/docker-desktop/) szükséges.
+
+> **Megjegyzés:** Az MCP szerver (`minicrm-mcp`) **nem** fut Dockerben — lokálisan kell elindítani, mert a Claude Desktop stdio kapcsolaton keresztül kommunikál vele, amit a Docker nem tud biztosítani.
+
+### Előfeltétel
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows)
+
+### 1. lépés: Env fájl létrehozása
+
+```bash
+copy docker.env.example docker.env
+```
+
+Szerkeszd a `docker.env` fájlt a hitelesítő adataiddal:
+
+```env
+MINICRM_SYSTEM_ID=A_TE_SYSTEM_ID_D
+MINICRM_API_KEY=A_TE_API_KULCSOD
+GATEWAY_API_KEY=valassz-egy-eros-veletlenszeru-kulcsot
+```
+
+### 2. lépés: Servicek build és indítás
+
+```bash
+docker compose --env-file docker.env up -d --build
+```
+
+Ez elindítja: ContactService (5081), ProjectService (5082), TodoService (5083), InvoiceService (5084), Gateway (5080).
+
+### 3. lépés: MCP szerver indítása (Dockeren kívül)
+
+```bash
+cd minicrm-mcp && npm start
+```
+
+### Opció: Mock API használata valós miniCRM helyett
+
+Add hozzá ezt a sort a `docker.env` fájlhoz:
+
+```env
+MINICRM_BASE_URL=http://mock-api:5090
+```
+
+Majd indítsd el a mock profillal:
+
+```bash
+docker compose --profile mock --env-file docker.env up -d --build
+```
+
+### Hasznos parancsok
+
+| Parancs | Leírás |
+|---|---|
+| `docker compose --env-file docker.env up -d` | Servicek indítása háttérben |
+| `docker compose --env-file docker.env down` | Containerek leállítása és törlése |
+| `docker compose --env-file docker.env logs -f gateway` | Gateway logok követése |
+| `docker compose --env-file docker.env ps` | Futó containerek listázása |
+
+---
+
 ## Unit tesztek futtatása
 
 A projekthez 28 unit teszt tartozik (xUnit + NSubstitute + FluentAssertions).

@@ -1,0 +1,78 @@
+services:
+
+  contact-service:
+    build:
+      context: .
+      dockerfile: minicrm-services/MiniCRM.ContactService/Dockerfile
+    ports:
+      - "5081:5081"
+    environment:
+      - MiniCRM__BaseUrl=${MINICRM_BASE_URL:-https://r3.minicrm.hu}
+      - MiniCRM__SystemId=${MINICRM_SYSTEM_ID}
+      - MiniCRM__ApiKey=${MINICRM_API_KEY}
+    restart: unless-stopped
+
+  project-service:
+    build:
+      context: .
+      dockerfile: minicrm-services/MiniCRM.ProjectService/Dockerfile
+    ports:
+      - "5082:5082"
+    environment:
+      - MiniCRM__BaseUrl=${MINICRM_BASE_URL:-https://r3.minicrm.hu}
+      - MiniCRM__SystemId=${MINICRM_SYSTEM_ID}
+      - MiniCRM__ApiKey=${MINICRM_API_KEY}
+    restart: unless-stopped
+
+  todo-service:
+    build:
+      context: .
+      dockerfile: minicrm-services/MiniCRM.TodoService/Dockerfile
+    ports:
+      - "5083:5083"
+    environment:
+      - MiniCRM__BaseUrl=${MINICRM_BASE_URL:-https://r3.minicrm.hu}
+      - MiniCRM__SystemId=${MINICRM_SYSTEM_ID}
+      - MiniCRM__ApiKey=${MINICRM_API_KEY}
+    restart: unless-stopped
+
+  invoice-service:
+    build:
+      context: .
+      dockerfile: minicrm-services/MiniCRM.InvoiceService/Dockerfile
+    ports:
+      - "5084:5084"
+    environment:
+      - MiniCRM__BaseUrl=${MINICRM_BASE_URL:-https://r3.minicrm.hu}
+      - MiniCRM__SystemId=${MINICRM_SYSTEM_ID}
+      - MiniCRM__ApiKey=${MINICRM_API_KEY}
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: .
+      dockerfile: minicrm-gateway/Dockerfile
+    ports:
+      - "5080:5080"
+    environment:
+      - Gateway__GatewayApiKey=${GATEWAY_API_KEY}
+      - Services__ContactService=http://contact-service:5081
+      - Services__ProjectService=http://project-service:5082
+      - Services__TodoService=http://todo-service:5083
+      - Services__InvoiceService=http://invoice-service:5084
+    depends_on:
+      - contact-service
+      - project-service
+      - todo-service
+      - invoice-service
+    restart: unless-stopped
+
+  mock-api:
+    build:
+      context: .
+      dockerfile: minicrm-mock/MiniCRM.MockApi/Dockerfile
+    ports:
+      - "5090:5090"
+    profiles:
+      - mock
+    restart: unless-stopped

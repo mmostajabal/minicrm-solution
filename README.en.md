@@ -294,6 +294,69 @@ REM SET MINICRM__BaseUrl=http://localhost:5090
 
 ---
 
+## Running with Docker
+
+Docker lets you run all backend services without installing .NET SDK — only [Docker Desktop](https://www.docker.com/products/docker-desktop/) is required.
+
+> **Note:** The MCP server (`minicrm-mcp`) is **not** included in Docker — it must run locally because Claude Desktop communicates with it over stdio (standard input/output), which Docker cannot provide.
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows)
+
+### Step 1: Create your env file
+
+```bash
+copy docker.env.example docker.env
+```
+
+Edit `docker.env` with your credentials:
+
+```env
+MINICRM_SYSTEM_ID=YOUR_SYSTEM_ID
+MINICRM_API_KEY=YOUR_API_KEY
+GATEWAY_API_KEY=choose-a-strong-random-key
+```
+
+### Step 2: Build and start all services
+
+```bash
+docker compose --env-file docker.env up -d --build
+```
+
+This starts: ContactService (5081), ProjectService (5082), TodoService (5083), InvoiceService (5084), Gateway (5080).
+
+### Step 3: Start the MCP server (outside Docker)
+
+```bash
+cd minicrm-mcp && npm start
+```
+
+### Option: Use Mock API instead of real miniCRM
+
+Add this line to `docker.env`:
+
+```env
+MINICRM_BASE_URL=http://mock-api:5090
+```
+
+Then start with the mock profile:
+
+```bash
+docker compose --profile mock --env-file docker.env up -d --build
+```
+
+### Useful commands
+
+| Command | Description |
+|---|---|
+| `docker compose --env-file docker.env up -d` | Start all services in background |
+| `docker compose --env-file docker.env down` | Stop and remove containers |
+| `docker compose --env-file docker.env logs -f gateway` | Follow gateway logs |
+| `docker compose --env-file docker.env ps` | Show running containers |
+
+---
+
 ## Running unit tests
 
 The project includes 28 unit tests using xUnit + NSubstitute + FluentAssertions.

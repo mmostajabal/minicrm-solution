@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/node_modules/
+**/.env
+credentials.bat
+docker.env
+.git/
+.vscode/
+minicrm-mcp/node_modules/

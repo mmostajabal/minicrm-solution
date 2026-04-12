@@ -2,6 +2,7 @@
 credentials.bat
 *.env
 .env
+docker.env
 
 # User secrets
 **/appsettings.Development.json
