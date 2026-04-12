@@ -1,0 +1,51 @@
+name: ci-mini-crm
+
+on:
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore minicrm.sln
+
+      - name: Build solution
+        run: dotnet build minicrm.sln --no-restore --configuration Release
+
+      - name: Run unit tests
+        run: dotnet test minicrm-tests/MiniCRM.Tests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
+
+  docker-build:
+    name: Build Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Gateway
+        run: docker build -f minicrm-gateway/Dockerfile -t minicrm-gateway .
+
+      - name: Build ContactService
+        run: docker build -f minicrm-services/MiniCRM.ContactService/Dockerfile -t minicrm-contact .
+
+      - name: Build ProjectService
+        run: docker build -f minicrm-services/MiniCRM.ProjectService/Dockerfile -t minicrm-project .
+
+      - name: Build TodoService
+        run: docker build -f minicrm-services/MiniCRM.TodoService/Dockerfile -t minicrm-todo .
+
+      - name: Build InvoiceService
+        run: docker build -f minicrm-services/MiniCRM.InvoiceService/Dockerfile -t minicrm-invoice .
+
+      - name: Build Mock API
+        run: docker build -f minicrm-mock/MiniCRM.MockApi/Dockerfile -t minicrm-mock .
