@@ -15,6 +15,10 @@ minicrm-gateway/      ← C# ASP.NET Core 8 API Gateway  :5080
      ├──► MiniCRM.ProjectService  :5082  ──► miniCRM REST API (HTTPS)
      ├──► MiniCRM.TodoService     :5083  ──► miniCRM REST API (HTTPS)
      └──► MiniCRM.InvoiceService  :5084  ──► miniCRM REST API (HTTPS)
+
+           VAGY (valós fiók nélküli teszteléshez)
+
+     └──► MiniCRM.MockApi         :5090  ← memóriában futó fake miniCRM API
 ```
 
 ## Előfeltételek
@@ -100,35 +104,58 @@ dotnet restore minicrm.sln
 start-all.bat
 ```
 
+Ez 7 terminálablakot nyit meg:
+- Mock API (5090-es port)
+- ContactService (5081-es port)
+- ProjectService (5082-es port)
+- TodoService (5083-es port)
+- InvoiceService (5084-es port)
+- API Gateway (5080-as port)
+
+Ezután az MCP szervert kézzel kell elindítani:
+```bash
+cd minicrm-mcp && npm start
+```
+
 ### Kézi indítás (fejlesztéshez)
 
 Minden parancsot külön terminálban futtass:
 
 ```bash
+# Terminal 0 – Mock API (opcionális, valós adatok nélküli teszteléshez)
+cd minicrm-mock/MiniCRM.MockApi && dotnet run
+
 # Terminal 1 – ContactService
-cd minicrm-services/MiniCRM.ContactService
-dotnet run
+cd minicrm-services/MiniCRM.ContactService && dotnet run
 
 # Terminal 2 – ProjectService
-cd minicrm-services/MiniCRM.ProjectService
-dotnet run
+cd minicrm-services/MiniCRM.ProjectService && dotnet run
 
 # Terminal 3 – TodoService
-cd minicrm-services/MiniCRM.TodoService
-dotnet run
+cd minicrm-services/MiniCRM.TodoService && dotnet run
 
 # Terminal 4 – InvoiceService
-cd minicrm-services/MiniCRM.InvoiceService
-dotnet run
+cd minicrm-services/MiniCRM.InvoiceService && dotnet run
 
 # Terminal 5 – API Gateway
-cd minicrm-gateway
-dotnet run
+cd minicrm-gateway && dotnet run
 
 # Terminal 6 – MCP Server
-cd minicrm-mcp
-npm start
+cd minicrm-mcp && npm start
 ```
+
+### Ellenőrzés – fut-e minden szolgáltatás?
+
+Nyisd meg ezeket az URL-eket a böngeszőben:
+
+| Szolgáltatás | URL |
+|---|---|
+| API Gateway Swagger | http://localhost:5080/swagger |
+| ContactService | http://localhost:5081/swagger |
+| ProjectService | http://localhost:5082/swagger |
+| TodoService | http://localhost:5083/swagger |
+| InvoiceService | http://localhost:5084/swagger |
+| Mock API | http://localhost:5090/Api/R3/Contact |
 
 ---
 
@@ -171,6 +198,60 @@ Másold be a következő konfigurációt (a **teljes elérési utat** igazítsd)
 1. **Swagger UI**: Nyisd meg a http://localhost:5080/swagger oldalt
 2. **MCP kapcsolat**: A Claude Desktopban keresd a 🔌 ikont – látszódjon a `minicrm` szerver
 3. **Teszt parancs**: Írj a Claude-nak: „Milyen projekt-kategóriák érhetők el?"
+
+---
+
+## Mock API (Tesztelés valós miniCRM fiók nélkül)
+
+A Mock API lokálisan szimulálja a miniCRM REST API-t, előre feltöltött tesztadatokkal.
+Nem szükséges valós fiók vagy API kulcs.
+
+### Előre betöltött adatok
+
+| Típus | Rekordok |
+|---|---|
+| Kapcsolatok | 5 (Nagy Gábor, Kovács Eszter, Tóth Péter, ...) |
+| Projektek | 4 (Webshop fejlesztés, ERP integráció, ...) |
+| Teendők | 3 (Megbeszélés, Telefonálás, Email) |
+| Számlák | 2 (INV-2026-001, INV-2026-002) |
+| Projekt kategóriák | 3 (Értékesítés, Támogatás, Projekt) |
+| Kapcsolat kategóriák | 2 (Ügyfél, Partner) |
+
+### Bekapcsolás
+
+1. Nyisd meg a `credentials.bat` fájlt és kommenteld ki az utolsó sort:
+```bat
+SET MINICRM__BaseUrl=http://localhost:5090
+```
+
+2. Indítsd el a Mock API-t (a `start-all.bat` automatikusan indítja, vagy kézzel):
+```bash
+cd minicrm-mock/MiniCRM.MockApi && dotnet run
+```
+
+3. Indítsd újra a szolgáltatásokat, hogy felvegyék az új `BaseUrl`-t.
+
+4. Teszteld böngészőből: http://localhost:5090/Api/R3/Contact
+
+### Kikapcsolás (visszaváltás valós miniCRM-re)
+
+Kommenteld vissza a sort a `credentials.bat`-ban:
+```bat
+REM SET MINICRM__BaseUrl=http://localhost:5090
+```
+
+---
+
+## Unit tesztek futtatása
+
+A projekthez 28 unit teszt tartozik (xUnit + NSubstitute + FluentAssertions).
+A tesztek mockokat használnak – **nem szükséges futtatni a szolgáltatásokat**.
+
+```bash
+dotnet test minicrm-tests/MiniCRM.Tests.csproj --logger "console;verbosity=normal"
+```
+
+VS Code Test Explorerben való futtatáshoz telepítsd a **.NET 10 SDK**-t (C# Dev Kit bővítmény igényli).
 
 ---
 

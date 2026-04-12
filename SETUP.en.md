@@ -15,6 +15,10 @@ minicrm-gateway/      ← C# ASP.NET Core 8 API Gateway  :5080
      ├──► MiniCRM.ProjectService  :5082  ──► miniCRM REST API (HTTPS)
      ├──► MiniCRM.TodoService     :5083  ──► miniCRM REST API (HTTPS)
      └──► MiniCRM.InvoiceService  :5084  ──► miniCRM REST API (HTTPS)
+
+           OR (for testing without a real account)
+
+     └──► MiniCRM.MockApi         :5090  ← in-memory fake miniCRM API
 ```
 
 ## Prerequisites
@@ -101,11 +105,27 @@ dotnet restore minicrm.sln
 start-all.bat
 ```
 
+This opens 7 terminal windows:
+- Mock API (port 5090)
+- ContactService (port 5081)
+- ProjectService (port 5082)
+- TodoService (port 5083)
+- InvoiceService (port 5084)
+- API Gateway (port 5080)
+
+Then start the MCP server manually:
+```bash
+cd minicrm-mcp && npm start
+```
+
 ### Manual (for development)
 
 Run each command in a separate terminal:
 
 ```bash
+# Terminal 0 – Mock API (optional, for testing without real credentials)
+cd minicrm-mock/MiniCRM.MockApi && dotnet run
+
 # Terminal 1 – ContactService
 cd minicrm-services/MiniCRM.ContactService && dotnet run
 
@@ -124,6 +144,19 @@ cd minicrm-gateway && dotnet run
 # Terminal 6 – MCP Server
 cd minicrm-mcp && npm start
 ```
+
+### Verify all services are running
+
+Open these URLs in your browser:
+
+| Service | URL |
+|---|---|
+| API Gateway Swagger | http://localhost:5080/swagger |
+| ContactService | http://localhost:5081/swagger |
+| ProjectService | http://localhost:5082/swagger |
+| TodoService | http://localhost:5083/swagger |
+| InvoiceService | http://localhost:5084/swagger |
+| Mock API | http://localhost:5090/Api/R3/Contact |
 
 ---
 
@@ -169,6 +202,60 @@ Paste the following (adjust the **full path** to match your installation):
 1. **Swagger UI**: open http://localhost:5080/swagger
 2. **MCP connection**: look for the 🔌 icon in Claude Desktop — the `minicrm` server should appear
 3. **Test command**: type to Claude: *"What project categories are available?"*
+
+---
+
+## Mock API (Testing without a real miniCRM account)
+
+The Mock API simulates the miniCRM REST API locally with pre-loaded test data.
+No real account or API key is needed.
+
+### Pre-loaded seed data
+
+| Type | Records |
+|---|---|
+| Contacts | 5 (Nagy Gábor, Kovács Eszter, Tóth Péter, ...) |
+| Projects | 4 (Webshop fejlesztés, ERP integráció, ...) |
+| Todos | 3 (Meeting, Call, Email) |
+| Invoices | 2 (INV-2026-001, INV-2026-002) |
+| Project categories | 3 (Értékesítés, Támogatás, Projekt) |
+| Contact categories | 2 (Ügyfél, Partner) |
+
+### How to enable
+
+1. Open `credentials.bat` and uncomment the last line:
+```bat
+SET MINICRM__BaseUrl=http://localhost:5090
+```
+
+2. Start the Mock API (included in `start-all.bat`, or manually):
+```bash
+cd minicrm-mock/MiniCRM.MockApi && dotnet run
+```
+
+3. Restart the services so they pick up the new `BaseUrl`.
+
+4. Test directly in browser: http://localhost:5090/Api/R3/Contact
+
+### How to disable (switch back to real miniCRM)
+
+Comment the line out again in `credentials.bat`:
+```bat
+REM SET MINICRM__BaseUrl=http://localhost:5090
+```
+
+---
+
+## Running unit tests
+
+The project includes 28 unit tests using xUnit + NSubstitute + FluentAssertions.
+Tests use mocks — **no services need to be running**.
+
+```bash
+dotnet test minicrm-tests/MiniCRM.Tests.csproj --logger "console;verbosity=normal"
+```
+
+To run from VS Code Test Explorer, install **.NET 10 SDK** (required by C# Dev Kit extension).
 
 ---
 
