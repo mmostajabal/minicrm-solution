@@ -25,11 +25,19 @@ minicrm-gateway/      ← C# ASP.NET Core 8 API Gateway  :5080
 
 ## Prerequisites
 
-- **Node.js** 18+ (https://nodejs.org)
-- **.NET 8 SDK** (https://dotnet.microsoft.com/download/dotnet/8.0)
-- **Claude Desktop** (claude.ai/download)
-- **miniCRM Professional** subscription with REST API add-on
-- miniCRM **SystemId** and **API key**
+Install all of the following before running the application:
+
+| Software | Version | Download | Notes |
+|---|---|---|---|
+| [Node.js](https://nodejs.org) | 18+ | https://nodejs.org/en/download | Choose **LTS** Windows x64 Installer |
+| [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) | 8.0+ | https://dotnet.microsoft.com/download/dotnet/8.0 | Choose **SDK** (not Runtime) x64 |
+| [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0+ | https://dotnet.microsoft.com/download/dotnet/10.0 | Required for VS Code Test Explorer only |
+| [Claude Desktop](https://claude.ai/download) | latest | https://claude.ai/download | Windows version |
+| [Git](https://git-scm.com/download/win) | any | https://git-scm.com/download/win | To clone this repository |
+| miniCRM account | Professional | https://app.minicrm.hu | Requires REST API add-on (or use Mock API) |
+
+> **Note:** .NET 10 SDK is only needed if you want to run tests inside VS Code Test Explorer.
+> Your application runs on .NET 8 — both SDKs can be installed side by side.
 
 ---
 

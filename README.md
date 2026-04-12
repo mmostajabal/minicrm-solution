@@ -25,11 +25,19 @@ minicrm-gateway/      ← C# ASP.NET Core 8 API Gateway  :5080
 
 ## Előfeltételek
 
-- **Node.js** 18+ (https://nodejs.org)
-- **.NET 8 SDK** (https://dotnet.microsoft.com/download/dotnet/8.0)
-- **Claude Desktop** (claude.ai/download)
-- **miniCRM Professional** előfizetés REST API add-on-nal
-- miniCRM **SystemId** és **API-kulcs**
+Az alkalmazás futtatása előtt telepítsd az összes alábbi szoftvert:
+
+| Szoftver | Verzió | Letöltés | Megjegyzés |
+|---|---|---|---|
+| [Node.js](https://nodejs.org) | 18+ | https://nodejs.org/en/download | Válaszd az **LTS** Windows x64 Installer-t |
+| [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) | 8.0+ | https://dotnet.microsoft.com/download/dotnet/8.0 | Az **SDK**-t válaszd (nem a Runtime-ot) x64 |
+| [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0+ | https://dotnet.microsoft.com/download/dotnet/10.0 | Csak VS Code Test Explorer használatához kell |
+| [Claude Desktop](https://claude.ai/download) | legfrissebb | https://claude.ai/download | Windows verzió |
+| [Git](https://git-scm.com/download/win) | bármely | https://git-scm.com/download/win | A repository klónozásához |
+| miniCRM fiók | Professional | https://app.minicrm.hu | REST API add-on szükséges (vagy Mock API) |
+
+> **Megjegyzés:** A .NET 10 SDK csak akkor szükséges, ha VS Code Test Explorerben szeretnéd futtatni a teszteket.
+> Az alkalmazás .NET 8-on fut – mindkét SDK egymás mellett telepíthető.
 
 ---
 
