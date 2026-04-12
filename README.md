@@ -311,8 +311,13 @@ Szerkeszd a `docker.env` fájlt a hitelesítő adataiddal:
 ```env
 MINICRM_SYSTEM_ID=A_TE_SYSTEM_ID_D
 MINICRM_API_KEY=A_TE_API_KULCSOD
-GATEWAY_API_KEY=valassz-egy-eros-veletlenszeru-kulcsot
+GATEWAY_API_KEY=minicrm-gateway-2026-secure-key
 ```
+
+> **Mi az a `GATEWAY_API_KEY`?**
+> Ez a Gateway-t védő titkos kulcs. Az alapértelmezett értéke: `minicrm-gateway-2026-secure-key` (a `minicrm-gateway/appsettings.json` fájlban van beállítva).
+> Erre a kulcsra szükséged lesz a Swagger UI-ban is (http://localhost:5080/swagger) — kattints az **Authorize** gombra és add meg a kulcsot.
+> Ugyanezt az értéket kell beállítani a `minicrm-mcp/.env` fájlban és a `claude_desktop_config.json`-ban is `GATEWAY_API_KEY` névvel.
 
 ### 2. lépés: Servicek build és indítás
 
@@ -322,7 +327,23 @@ docker compose --env-file docker.env up -d --build
 
 Ez elindítja: ContactService (5081), ProjectService (5082), TodoService (5083), InvoiceService (5084), Gateway (5080).
 
-### 3. lépés: MCP szerver indítása (Dockeren kívül)
+Várj, amíg minden container elindul — ellenőrzés:
+
+```bash
+docker compose --env-file docker.env ps
+```
+
+### 3. lépés: Ellenőrzés Swaggerben
+
+Nyisd meg a http://localhost:5080/swagger oldalt a böngészőben.
+
+Kattints az **Authorize** gombra (jobb felül), add meg:
+```
+minicrm-gateway-2026-secure-key
+```
+Majd próbálj ki egy végpontot — `200 OK` választ kell kapnod.
+
+### 4. lépés: MCP szerver indítása (Dockeren kívül)
 
 ```bash
 cd minicrm-mcp && npm start

@@ -315,8 +315,13 @@ Edit `docker.env` with your credentials:
 ```env
 MINICRM_SYSTEM_ID=YOUR_SYSTEM_ID
 MINICRM_API_KEY=YOUR_API_KEY
-GATEWAY_API_KEY=choose-a-strong-random-key
+GATEWAY_API_KEY=minicrm-gateway-2026-secure-key
 ```
+
+> **What is `GATEWAY_API_KEY`?**
+> It is the secret key that protects the API Gateway. The default value is `minicrm-gateway-2026-secure-key` (set in `minicrm-gateway/appsettings.json`).
+> You will also need this key to authorize requests in the Swagger UI at http://localhost:5080/swagger — click the **Authorize** button and enter the key.
+> The same value must also be set in `minicrm-mcp/.env` and `claude_desktop_config.json` as `GATEWAY_API_KEY`.
 
 ### Step 2: Build and start all services
 
@@ -326,7 +331,23 @@ docker compose --env-file docker.env up -d --build
 
 This starts: ContactService (5081), ProjectService (5082), TodoService (5083), InvoiceService (5084), Gateway (5080).
 
-### Step 3: Start the MCP server (outside Docker)
+Wait until all containers are healthy — check with:
+
+```bash
+docker compose --env-file docker.env ps
+```
+
+### Step 3: Verify in Swagger
+
+Open http://localhost:5080/swagger in your browser.
+
+Click the **Authorize** button (top right), enter:
+```
+minicrm-gateway-2026-secure-key
+```
+Then try any endpoint — you should get a `200 OK` response.
+
+### Step 4: Start the MCP server (outside Docker)
 
 ```bash
 cd minicrm-mcp && npm start
