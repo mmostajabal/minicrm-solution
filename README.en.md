@@ -300,6 +300,24 @@ Docker lets you run all backend services without installing .NET SDK — only [D
 
 > **Note:** The MCP server (`minicrm-mcp`) is **not** included in Docker — it must run locally because Claude Desktop communicates with it over stdio (standard input/output), which Docker cannot provide.
 
+### About `docker.env`
+
+A `docker.env` file is already included in the repository. It was created so you can **test the application immediately** without any real miniCRM account — all services point to the built-in Mock API with pre-loaded test data.
+
+When you are ready to connect to a **real miniCRM account**, simply edit `docker.env` and replace the placeholder values with your real credentials:
+
+```env
+MINICRM_SYSTEM_ID=YOUR_SYSTEM_ID       ← replace with your real System ID
+MINICRM_API_KEY=YOUR_API_KEY           ← replace with your real API key
+# MINICRM_BASE_URL=http://mock-api:5090  ← comment out or delete this line
+GATEWAY_API_KEY=minicrm-gateway-2026-secure-key
+```
+
+Then start without the mock profile:
+```bash
+docker compose --env-file docker.env up -d --build
+```
+
 ### Prerequisites
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows)

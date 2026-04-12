@@ -296,6 +296,24 @@ A Docker lehetővé teszi, hogy az összes backend szolgáltatást .NET SDK tele
 
 > **Megjegyzés:** Az MCP szerver (`minicrm-mcp`) **nem** fut Dockerben — lokálisan kell elindítani, mert a Claude Desktop stdio kapcsolaton keresztül kommunikál vele, amit a Docker nem tud biztosítani.
 
+### A `docker.env` fájlról
+
+A repository már tartalmaz egy `docker.env` fájlt. Azért hoztuk létre, hogy **azonnal kipróbálhasd az alkalmazást** valós miniCRM fiók nélkül — minden service a beépített Mock API-t használja, előre feltöltött tesztadatokkal.
+
+Ha **valós miniCRM fiókhoz** szeretnél csatlakozni, egyszerűen szerkeszd a `docker.env` fájlt, és cseréld ki a helyőrzőket a valódi adataidra:
+
+```env
+MINICRM_SYSTEM_ID=A_TE_SYSTEM_ID_D     ← cseréld ki a valódi System ID-ra
+MINICRM_API_KEY=A_TE_API_KULCSOD       ← cseréld ki a valódi API kulcsra
+# MINICRM_BASE_URL=http://mock-api:5090  ← kommenteld ki vagy töröld ezt a sort
+GATEWAY_API_KEY=minicrm-gateway-2026-secure-key
+```
+
+Majd indítsd el mock profil nélkül:
+```bash
+docker compose --env-file docker.env up -d --build
+```
+
 ### Előfeltétel
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows)
