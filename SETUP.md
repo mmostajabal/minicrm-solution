@@ -98,24 +98,30 @@ dotnet restore minicrm.sln
 
 ## 4. lépés: Szolgáltatások indítása
 
-### Automatikus indítás (ajánlott)
+### Automatikus indítás (ajánlott) — start-all.bat
 
-```bat
-start-all.bat
-```
+Kattints duplán a `start-all.bat` fájlra a megoldás gyökérkönyvtárából.
 
-Ez 7 terminálablakot nyit meg:
-- Mock API (5090-es port)
-- ContactService (5081-es port)
-- ProjectService (5082-es port)
-- TodoService (5083-es port)
-- InvoiceService (5084-es port)
-- API Gateway (5080-as port)
+Mit csinál:
+1. Betölti a hitelesítő adatokat a `credentials.bat` fájlból
+2. Minden szolgáltatáshoz egy-egy terminálablakot nyit, ebben a sorrendben:
+   - **Mock API** — 5090-es port (fake miniCRM, valós fiók nélküli teszteléshez)
+   - **ContactService** — 5081-es port
+   - **ProjectService** — 5082-es port
+   - **TodoService** — 5083-es port
+   - **InvoiceService** — 5084-es port
+   - **API Gateway** — 5080-as port
 
-Ezután az MCP szervert kézzel kell elindítani:
+Várj, amíg minden ablakban megjelenik a `Now listening on: http://0.0.0.0:XXXX` üzenet, mielőtt továbblépnél.
+
+Ezután indítsd el az MCP szervert egy külön terminálban:
 ```bash
 cd minicrm-mcp && npm start
 ```
+
+> **Megjegyzés:** A Mock API ablak automatikusan elindul, de csak akkor szolgál adatokat,
+> ha a `credentials.bat`-ban be van állítva: `MINICRM__BaseUrl=http://localhost:5090`.
+> Alapértelmezetten a szolgáltatások a valós miniCRM API-t hívják.
 
 ### Kézi indítás (fejlesztéshez)
 

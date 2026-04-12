@@ -99,24 +99,30 @@ dotnet restore minicrm.sln
 
 ## Step 4: Start all services
 
-### Automatic (recommended)
+### Automatic (recommended) — start-all.bat
 
-```bat
-start-all.bat
-```
+Double-click `start-all.bat` from the solution root folder.
 
-This opens 7 terminal windows:
-- Mock API (port 5090)
-- ContactService (port 5081)
-- ProjectService (port 5082)
-- TodoService (port 5083)
-- InvoiceService (port 5084)
-- API Gateway (port 5080)
+What it does:
+1. Loads credentials from `credentials.bat`
+2. Opens a terminal window for each service in this order:
+   - **Mock API** — port 5090 (fake miniCRM, for testing without real account)
+   - **ContactService** — port 5081
+   - **ProjectService** — port 5082
+   - **TodoService** — port 5083
+   - **InvoiceService** — port 5084
+   - **API Gateway** — port 5080
 
-Then start the MCP server manually:
+Wait until all windows show `Now listening on: http://0.0.0.0:XXXX` before continuing.
+
+Then start the MCP server in a separate terminal:
 ```bash
 cd minicrm-mcp && npm start
 ```
+
+> **Note:** The Mock API window starts automatically but only serves data
+> if `MINICRM__BaseUrl=http://localhost:5090` is set in `credentials.bat`.
+> By default the services call the real miniCRM API.
 
 ### Manual (for development)
 
