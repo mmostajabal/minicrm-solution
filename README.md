@@ -1,5 +1,7 @@
 # miniCRM MCP Solution – Telepítési Útmutató
 
+> English version: [SETUP.en.md](SETUP.en.md)
+
 ## Architektúra áttekintése
 
 ```
@@ -290,6 +292,38 @@ dotnet test minicrm-tests/MiniCRM.Tests.csproj --logger "console;verbosity=norma
 ```
 
 VS Code Test Explorerben való futtatáshoz telepítsd a **.NET 10 SDK**-t (C# Dev Kit bővítmény igényli).
+
+---
+
+## Nyelv váltása (Magyar / English)
+
+Az MCP szerver két nyelvet támogat: **magyar** és **angol**.
+
+### A `.env` fájlban
+
+Szerkeszd a `minicrm-mcp/.env` fájlt:
+
+```
+LANGUAGE_ID=hu   # magyar (alapértelmezett)
+LANGUAGE_ID=en   # angol
+```
+
+### Claude Desktop konfigurációban
+
+A `%APPDATA%\Claude\claude_desktop_config.json` fájlban:
+
+```json
+"env": {
+  "GATEWAY_URL":    "http://localhost:5080",
+  "GATEWAY_API_KEY": "a-gateway-kulcsod",
+  "LANGUAGE_ID":    "hu",
+  "LOG_LEVEL":      "info"
+}
+```
+
+Változtasd `"hu"`-ról `"en"`-re az angol válaszokhoz.
+
+> **Megjegyzés:** Nyelv váltás után indítsd újra az MCP szervert és a Claude Desktopot.
 
 ---
 
