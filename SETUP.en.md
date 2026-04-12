@@ -205,6 +205,38 @@ Paste the following (adjust the **full path** to match your installation):
 
 ---
 
+## How to run the application (quick start)
+
+### Option A – With real miniCRM account
+
+1. Fill in your credentials in `credentials.bat`:
+   ```bat
+   SET MINICRM__SystemId=YOUR_SYSTEM_ID
+   SET MINICRM__ApiKey=YOUR_API_KEY
+   ```
+2. Double-click `start-all.bat` — waits for all 5 services to start
+3. In a terminal: `cd minicrm-mcp && npm start`
+4. Open Claude Desktop → your miniCRM project
+5. Ask Claude: *"List my contacts"*
+
+### Option B – With Mock API (no real account needed)
+
+1. Open `credentials.bat` and uncomment:
+   ```bat
+   SET MINICRM__BaseUrl=http://localhost:5090
+   ```
+2. Double-click `start-all.bat` — starts Mock API + all 5 services
+3. In a terminal: `cd minicrm-mcp && npm start`
+4. Open Claude Desktop → your miniCRM project
+5. Ask Claude: *"List my contacts"* — returns the 5 seeded test contacts
+
+### Verify everything is working
+
+- Gateway Swagger: http://localhost:5080/swagger
+- MCP connected: look for the plug icon in Claude Desktop
+
+---
+
 ## Mock API (Testing without a real miniCRM account)
 
 The Mock API simulates the miniCRM REST API locally with pre-loaded test data.

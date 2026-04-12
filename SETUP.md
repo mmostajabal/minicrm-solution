@@ -201,6 +201,38 @@ Másold be a következő konfigurációt (a **teljes elérési utat** igazítsd)
 
 ---
 
+## Az alkalmazás futtatása (gyors útmutató)
+
+### A lehetőség – Valós miniCRM fiókkal
+
+1. Töltsd ki az adatokat a `credentials.bat` fájlban:
+   ```bat
+   SET MINICRM__SystemId=A_TE_SYSTEM_ID_D
+   SET MINICRM__ApiKey=A_TE_API_KULCSOD
+   ```
+2. Kattints duplán a `start-all.bat` fájlra – várja meg, amíg mind az 5 szolgáltatás elindul
+3. Egy terminálban: `cd minicrm-mcp && npm start`
+4. Nyisd meg a Claude Desktop alkalmazást → a miniCRM projektedet
+5. Írj Claude-nak: *"Listázd a kapcsolataimat"*
+
+### B lehetőség – Mock API-val (valós fiók nélkül)
+
+1. Nyisd meg a `credentials.bat` fájlt és kommenteld ki a sort:
+   ```bat
+   SET MINICRM__BaseUrl=http://localhost:5090
+   ```
+2. Kattints duplán a `start-all.bat` fájlra – elindítja a Mock API-t és mind az 5 szolgáltatást
+3. Egy terminálban: `cd minicrm-mcp && npm start`
+4. Nyisd meg a Claude Desktop alkalmazást → a miniCRM projektedet
+5. Írj Claude-nak: *"Listázd a kapcsolataimat"* – az 5 előre feltöltött tesztkontaktot adja vissza
+
+### Ellenőrzés – minden fut?
+
+- Gateway Swagger: http://localhost:5080/swagger
+- MCP csatlakozva: keresd a dugó ikont a Claude Desktopban
+
+---
+
 ## Mock API (Tesztelés valós miniCRM fiók nélkül)
 
 A Mock API lokálisan szimulálja a miniCRM REST API-t, előre feltöltött tesztadatokkal.
