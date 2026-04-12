@@ -439,6 +439,62 @@ Változtasd `"hu"`-ról `"en"`-re az angol válaszokhoz.
 
 ---
 
+## Cross-platform támogatás
+
+Az alkalmazás cross-platform tervezésű. Az alábbiakban látható, hogy mi működik az egyes operációs rendszereken, és mit kell másképp csinálni.
+
+| Komponens | Windows | macOS | Linux |
+|---|---|---|---|
+| Docker (összes backend service) | ✓ | ✓ | ✓ |
+| .NET 8 servicek (kézi indítás) | ✓ | ✓ | ✓ |
+| Node.js MCP szerver | ✓ | ✓ | ✓ |
+| `start-all.bat` (automatikus indítás) | ✓ | ✗ | ✗ |
+| Claude Desktop | ✓ | ✓ | ✗ |
+
+### Futtatás macOS-en
+
+Minden működik macOS-en, kivéve a `start-all.bat` fájlt. Helyette használd a kézi indítási parancsokat:
+
+```bash
+# Terminal 0 – Mock API (opcionális)
+cd minicrm-mock/MiniCRM.MockApi && dotnet run &
+
+# Terminal 1-4 – Mikroszolgáltatások
+cd minicrm-services/MiniCRM.ContactService && dotnet run &
+cd minicrm-services/MiniCRM.ProjectService && dotnet run &
+cd minicrm-services/MiniCRM.TodoService && dotnet run &
+cd minicrm-services/MiniCRM.InvoiceService && dotnet run &
+
+# Terminal 5 – Gateway
+cd minicrm-gateway && dotnet run &
+
+# Terminal 6 – MCP szerver
+cd minicrm-mcp && npm start
+```
+
+A Claude Desktop konfigurációs fájl helye macOS-en:
+```
+~/Library/Application Support/Claude/claude_desktop_config.json
+```
+
+Használj perjelet az `args` útvonalon:
+```json
+"args": ["/Users/yourname/minicrm-solution/minicrm-mcp/src/index.js"]
+```
+
+> **Legegyszerűbb megoldás macOS-en:** használd a Dockert — futtasd a `docker compose --profile mock --env-file docker.env up -d --build` parancsot, és nem kell a serviceket kézzel elindítani.
+
+### Futtatás Linuxon
+
+A backend servicek (.NET, Node.js, Docker) mind futnak Linuxon. Azonban **a Claude Desktopnak nincs hivatalos Linux kiadása**, így a teljes MCP integráció Claude-dal Linuxon nem érhető el.
+
+Az összes service-t futtathatod és tesztelheted Linuxon:
+- Docker segítségével: `docker compose --profile mock --env-file docker.env up -d --build`
+- Tesztelés Swaggerrel: http://localhost:5080/swagger (hitelesítés: `minicrm-gateway-2026-secure-key`)
+- Vagy közvetlenül REST API-n keresztül `curl`-lel vagy bármilyen HTTP kliensekkel
+
+---
+
 ## Hibaelhárítás
 
 | Probléma | Megoldás |

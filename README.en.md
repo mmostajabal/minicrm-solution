@@ -443,6 +443,62 @@ Change `"en"` to `"hu"` for Hungarian responses.
 
 ---
 
+## Cross-platform support
+
+The application is designed to be cross-platform. Here is what works on each operating system and what you need to do differently.
+
+| Component | Windows | macOS | Linux |
+|---|---|---|---|
+| Docker (all backend services) | ✓ | ✓ | ✓ |
+| .NET 8 services (manual run) | ✓ | ✓ | ✓ |
+| Node.js MCP server | ✓ | ✓ | ✓ |
+| `start-all.bat` (auto startup) | ✓ | ✗ | ✗ |
+| Claude Desktop | ✓ | ✓ | ✗ |
+
+### Running on macOS
+
+Everything works on macOS except `start-all.bat`. Use the manual startup commands instead:
+
+```bash
+# Terminal 0 – Mock API (optional)
+cd minicrm-mock/MiniCRM.MockApi && dotnet run &
+
+# Terminal 1-4 – Microservices
+cd minicrm-services/MiniCRM.ContactService && dotnet run &
+cd minicrm-services/MiniCRM.ProjectService && dotnet run &
+cd minicrm-services/MiniCRM.TodoService && dotnet run &
+cd minicrm-services/MiniCRM.InvoiceService && dotnet run &
+
+# Terminal 5 – Gateway
+cd minicrm-gateway && dotnet run &
+
+# Terminal 6 – MCP server
+cd minicrm-mcp && npm start
+```
+
+Claude Desktop config file location on macOS:
+```
+~/Library/Application Support/Claude/claude_desktop_config.json
+```
+
+Use forward slashes in the `args` path:
+```json
+"args": ["/Users/yourname/minicrm-solution/minicrm-mcp/src/index.js"]
+```
+
+> **Easiest option on macOS:** use Docker — run `docker compose --profile mock --env-file docker.env up -d --build` and skip the manual service startup entirely.
+
+### Running on Linux
+
+The backend services (.NET, Node.js, Docker) all run on Linux. However, **Claude Desktop does not have an official Linux release**, so the full MCP integration with Claude is not available on Linux.
+
+You can still run and test all services on Linux:
+- Use Docker: `docker compose --profile mock --env-file docker.env up -d --build`
+- Test via Swagger: http://localhost:5080/swagger (authorize with `minicrm-gateway-2026-secure-key`)
+- Or call the REST API directly with `curl` or any HTTP client
+
+---
+
 ## Troubleshooting
 
 | Problem | Solution |
