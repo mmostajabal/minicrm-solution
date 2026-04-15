@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MiniCRM.ContactService.Controllers;
 using MiniCRM.Shared.DTOs;
 using MiniCRM.Shared.Exceptions;
+using MiniCRM.Shared.Services;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;
@@ -13,12 +14,18 @@ namespace MiniCRM.Tests.ContactService;
 public class ContactsControllerTests
 {
     private readonly IContactApiClient _api = Substitute.For<IContactApiClient>();
+    private readonly ICacheService _cache = Substitute.For<ICacheService>();
     private readonly ILogger<ContactsController> _logger = Substitute.For<ILogger<ContactsController>>();
     private readonly ContactsController _sut;
 
     public ContactsControllerTests()
     {
-        _sut = new ContactsController(_api, _logger);
+        // Cache always returns null (miss) so tests exercise the real API path
+        _cache.GetAsync<ContactListResponse>(Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .Returns((ContactListResponse?)null);
+        _cache.GetAsync<ContactDto>(Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .Returns((ContactDto?)null);
+        _sut = new ContactsController(_api, _cache, _logger);
     }
 
     // --- Search ---

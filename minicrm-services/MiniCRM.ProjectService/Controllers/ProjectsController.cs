@@ -6,6 +6,7 @@ using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using MiniCRM.Shared.DTOs;
 using MiniCRM.Shared.Exceptions;
+using MiniCRM.Shared.Services;
 
 namespace MiniCRM.ProjectService.Controllers;
 
@@ -14,26 +15,49 @@ namespace MiniCRM.ProjectService.Controllers;
 [Produces("application/json")]
 public class ProjectsController : ControllerBase
 {
+    private const string CachePrefix = "projects:";
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
+
     private readonly IProjectApiClient _api;
+    private readonly ICacheService _cache;
     private readonly ILogger<ProjectsController> _logger;
 
-    public ProjectsController(IProjectApiClient api, ILogger<ProjectsController> logger)
+    public ProjectsController(IProjectApiClient api, ICacheService cache, ILogger<ProjectsController> logger)
     {
         _api    = api;
+        _cache  = cache;
         _logger = logger;
     }
 
     [HttpGet]
     public async Task<IActionResult> Search([FromQuery] ProjectSearchParams p, CancellationToken ct)
     {
-        try   { return Ok(await _api.SearchAsync(p, ct)); }
+        var key = $"{CachePrefix}search:{p.Name}:{p.CategoryId}:{p.StatusId}:{p.ContactId}:{p.UserId}:{p.Page}:{p.MaxElements}";
+        var cached = await _cache.GetAsync<ProjectListResponse>(key, ct);
+        if (cached is not null) return Ok(cached);
+
+        try
+        {
+            var result = await _api.SearchAsync(p, ct);
+            await _cache.SetAsync(key, result, CacheTtl, ct);
+            return Ok(result);
+        }
         catch (MiniCrmException ex) { return StatusCode(ex.StatusCode ?? 500, new { error = ex.Message }); }
     }
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id, CancellationToken ct)
     {
-        try   { return Ok(await _api.GetByIdAsync(id, ct)); }
+        var key = $"{CachePrefix}id:{id}";
+        var cached = await _cache.GetAsync<ProjectDto>(key, ct);
+        if (cached is not null) return Ok(cached);
+
+        try
+        {
+            var result = await _api.GetByIdAsync(id, ct);
+            await _cache.SetAsync(key, result, CacheTtl, ct);
+            return Ok(result);
+        }
         catch (MiniCrmNotFoundException) { return NotFound(new { error = $"Project {id} not found." }); }
         catch (MiniCrmException ex)      { return StatusCode(ex.StatusCode ?? 500, new { error = ex.Message }); }
     }
@@ -44,6 +68,7 @@ public class ProjectsController : ControllerBase
         try
         {
             var result = await _api.CreateAsync(dto, ct);
+            await _cache.RemoveByPrefixAsync(CachePrefix, ct);
             return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
         catch (MiniCrmException ex) { return StatusCode(ex.StatusCode ?? 500, new { error = ex.Message }); }
@@ -56,7 +81,12 @@ public class ProjectsController : ControllerBase
     [HttpPatch("{id:int}/status")]
     public async Task<IActionResult> ChangeStatus(int id, [FromBody] ProjectStatusChangeRequest req, CancellationToken ct)
     {
-        try   { return Ok(await _api.ChangeStatusAsync(id, req.StatusId, ct)); }
+        try
+        {
+            var result = await _api.ChangeStatusAsync(id, req.StatusId, ct);
+            await _cache.RemoveByPrefixAsync(CachePrefix, ct);
+            return Ok(result);
+        }
         catch (MiniCrmNotFoundException) { return NotFound(new { error = $"Project {id} not found." }); }
         catch (MiniCrmException ex)      { return StatusCode(ex.StatusCode ?? 500, new { error = ex.Message }); }
     }

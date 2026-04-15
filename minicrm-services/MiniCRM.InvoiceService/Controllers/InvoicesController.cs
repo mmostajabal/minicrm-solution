@@ -5,6 +5,7 @@ using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using MiniCRM.Shared.DTOs;
 using MiniCRM.Shared.Exceptions;
+using MiniCRM.Shared.Services;
 
 namespace MiniCRM.InvoiceService.Controllers;
 
@@ -16,19 +17,33 @@ namespace MiniCRM.InvoiceService.Controllers;
 [Produces("application/json")]
 public class InvoicesController : ControllerBase
 {
+    private const string CachePrefix = "invoices:";
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
+
     private readonly InvoiceApiClient _api;
+    private readonly ICacheService _cache;
     private readonly ILogger<InvoicesController> _logger;
 
-    public InvoicesController(InvoiceApiClient api, ILogger<InvoicesController> logger)
+    public InvoicesController(InvoiceApiClient api, ICacheService cache, ILogger<InvoicesController> logger)
     {
         _api    = api;
+        _cache  = cache;
         _logger = logger;
     }
 
     [HttpGet]
     public async Task<IActionResult> Query([FromQuery] InvoiceSearchParams p, CancellationToken ct)
     {
-        try   { return Ok(await _api.QueryAsync(p, ct)); }
+        var key = $"{CachePrefix}query:{p.ProjectId}:{p.ContactId}:{p.Status}:{p.Page}:{p.MaxElements}";
+        var cached = await _cache.GetAsync<InvoiceListResponse>(key, ct);
+        if (cached is not null) return Ok(cached);
+
+        try
+        {
+            var result = await _api.QueryAsync(p, ct);
+            await _cache.SetAsync(key, result, CacheTtl, ct);
+            return Ok(result);
+        }
         catch (MiniCrmException ex) { return StatusCode(ex.StatusCode ?? 500, new { error = ex.Message }); }
     }
 }

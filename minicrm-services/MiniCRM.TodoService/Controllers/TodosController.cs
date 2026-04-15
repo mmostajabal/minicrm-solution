@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using MiniCRM.Shared.DTOs;
 using MiniCRM.Shared.Exceptions;
+using MiniCRM.Shared.Services;
 
 namespace MiniCRM.TodoService.Controllers;
 
@@ -13,12 +14,17 @@ namespace MiniCRM.TodoService.Controllers;
 [Produces("application/json")]
 public class TodosController : ControllerBase
 {
+    private const string CachePrefix = "todos:";
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
+
     private readonly ITodoApiClient _api;
+    private readonly ICacheService _cache;
     private readonly ILogger<TodosController> _logger;
 
-    public TodosController(ITodoApiClient api, ILogger<TodosController> logger)
+    public TodosController(ITodoApiClient api, ICacheService cache, ILogger<TodosController> logger)
     {
         _api    = api;
+        _cache  = cache;
         _logger = logger;
     }
 
@@ -26,7 +32,16 @@ public class TodosController : ControllerBase
     [HttpGet("{cardId:int}")]
     public async Task<IActionResult> GetList(int cardId, CancellationToken ct)
     {
-        try   { return Ok(await _api.GetListAsync(cardId, ct)); }
+        var key = $"{CachePrefix}card:{cardId}";
+        var cached = await _cache.GetAsync<TodoListResponse>(key, ct);
+        if (cached is not null) return Ok(cached);
+
+        try
+        {
+            var result = await _api.GetListAsync(cardId, ct);
+            await _cache.SetAsync(key, result, CacheTtl, ct);
+            return Ok(result);
+        }
         catch (MiniCrmException ex) { return StatusCode(ex.StatusCode ?? 500, new { error = ex.Message }); }
     }
 
@@ -37,6 +52,7 @@ public class TodosController : ControllerBase
         try
         {
             var result = await _api.CreateAsync(req, ct);
+            await _cache.RemoveByPrefixAsync($"{CachePrefix}card:{req.ProjectId}", ct);
             return Created($"/api/todos/{req.ProjectId}", result);
         }
         catch (MiniCrmException ex) { return StatusCode(ex.StatusCode ?? 500, new { error = ex.Message }); }

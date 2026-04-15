@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MiniCRM.ProjectService.Controllers;
 using MiniCRM.Shared.DTOs;
 using MiniCRM.Shared.Exceptions;
+using MiniCRM.Shared.Services;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Xunit;
@@ -13,12 +14,18 @@ namespace MiniCRM.Tests.ProjectService;
 public class ProjectsControllerTests
 {
     private readonly IProjectApiClient _api = Substitute.For<IProjectApiClient>();
+    private readonly ICacheService _cache = Substitute.For<ICacheService>();
     private readonly ILogger<ProjectsController> _logger = Substitute.For<ILogger<ProjectsController>>();
     private readonly ProjectsController _sut;
 
     public ProjectsControllerTests()
     {
-        _sut = new ProjectsController(_api, _logger);
+        // Cache always returns null (miss) so tests exercise the real API path
+        _cache.GetAsync<ProjectListResponse>(Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .Returns((ProjectListResponse?)null);
+        _cache.GetAsync<ProjectDto>(Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .Returns((ProjectDto?)null);
+        _sut = new ProjectsController(_api, _cache, _logger);
     }
 
     // --- Search ---

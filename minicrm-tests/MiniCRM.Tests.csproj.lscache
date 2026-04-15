@@ -217,6 +217,7 @@ TodoService/TodosControllerTests.cs
   System.Security.Cryptography.Xml.dll
   System.Threading.RateLimiting.dll
  microsoft.codecoverage/17.8.0/lib/netcoreapp3.1/Microsoft.VisualStudio.CodeCoverage.Shim.dll
+ microsoft.extensions.caching.stackexchangeredis/8.0.0/lib/net8.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll
  microsoft.extensions.dependencymodel/8.0.2/lib/net8.0/Microsoft.Extensions.DependencyModel.dll
  microsoft.netcore.app.ref/8.0.25/ref/net8.0/
   Microsoft.CSharp.dll
@@ -395,6 +396,7 @@ TodoService/TodosControllerTests.cs
  newtonsoft.json/13.0.1/lib/netstandard2.0/Newtonsoft.Json.dll
  nsubstitute/5.1.0/lib/net6.0/NSubstitute.dll
  nuget.frameworks/6.5.0/lib/netstandard2.0/NuGet.Frameworks.dll
+ pipelines.sockets.unofficial/2.2.8/lib/net5.0/Pipelines.Sockets.Unofficial.dll
  serilog.aspnetcore/8.0.3/lib/net8.0/Serilog.AspNetCore.dll
  serilog.extensions.hosting/8.0.0/lib/net8.0/Serilog.Extensions.Hosting.dll
  serilog.extensions.logging/8.0.0/lib/net8.0/Serilog.Extensions.Logging.dll
@@ -404,6 +406,7 @@ TodoService/TodosControllerTests.cs
  serilog.sinks.debug/2.0.0/lib/netstandard2.1/Serilog.Sinks.Debug.dll
  serilog.sinks.file/6.0.0/lib/net8.0/Serilog.Sinks.File.dll
  serilog/4.0.0/lib/net8.0/Serilog.dll
+ stackexchange.redis/2.8.16/lib/net6.0/StackExchange.Redis.dll
  swashbuckle.aspnetcore.swagger/6.9.0/lib/net8.0/Swashbuckle.AspNetCore.Swagger.dll
  swashbuckle.aspnetcore.swaggergen/6.9.0/lib/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
  swashbuckle.aspnetcore.swaggerui/6.9.0/lib/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll

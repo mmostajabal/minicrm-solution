@@ -6,6 +6,7 @@ using System.Web;
 using Microsoft.AspNetCore.Mvc;
 using MiniCRM.Shared.DTOs;
 using MiniCRM.Shared.Exceptions;
+using MiniCRM.Shared.Services;
 
 namespace MiniCRM.ContactService.Controllers;
 
@@ -14,12 +15,17 @@ namespace MiniCRM.ContactService.Controllers;
 [Produces("application/json")]
 public class ContactsController : ControllerBase
 {
+    private const string CachePrefix = "contacts:";
+    private static readonly TimeSpan CacheTtl = TimeSpan.FromSeconds(60);
+
     private readonly IContactApiClient _api;
+    private readonly ICacheService _cache;
     private readonly ILogger<ContactsController> _logger;
 
-    public ContactsController(IContactApiClient api, ILogger<ContactsController> logger)
+    public ContactsController(IContactApiClient api, ICacheService cache, ILogger<ContactsController> logger)
     {
         _api    = api;
+        _cache  = cache;
         _logger = logger;
     }
 
@@ -27,9 +33,14 @@ public class ContactsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Search([FromQuery] ContactSearchParams p, CancellationToken ct)
     {
+        var key = $"{CachePrefix}search:{p.Name}:{p.Email}:{p.Phone}:{p.StatusId}:{p.UserId}:{p.Page}:{p.MaxElements}";
+        var cached = await _cache.GetAsync<ContactListResponse>(key, ct);
+        if (cached is not null) return Ok(cached);
+
         try
         {
             var result = await _api.SearchAsync(p, ct);
+            await _cache.SetAsync(key, result, CacheTtl, ct);
             return Ok(result);
         }
         catch (MiniCrmException ex)
@@ -43,9 +54,14 @@ public class ContactsController : ControllerBase
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id, CancellationToken ct)
     {
+        var key = $"{CachePrefix}id:{id}";
+        var cached = await _cache.GetAsync<ContactDto>(key, ct);
+        if (cached is not null) return Ok(cached);
+
         try
         {
             var result = await _api.GetByIdAsync(id, ct);
+            await _cache.SetAsync(key, result, CacheTtl, ct);
             return Ok(result);
         }
         catch (MiniCrmNotFoundException)
@@ -66,6 +82,7 @@ public class ContactsController : ControllerBase
         try
         {
             var result = await _api.CreateAsync(dto, ct);
+            await _cache.RemoveByPrefixAsync(CachePrefix, ct);
             return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
         catch (MiniCrmException ex)
@@ -83,6 +100,7 @@ public class ContactsController : ControllerBase
         try
         {
             var result = await _api.UpdateAsync(id, dto, ct);
+            await _cache.RemoveByPrefixAsync(CachePrefix, ct);
             return Ok(result);
         }
         catch (MiniCrmNotFoundException)

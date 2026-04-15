@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MiniCRM.Shared.DTOs;
 using MiniCRM.Shared.Exceptions;
+using MiniCRM.Shared.Services;
 using MiniCRM.TodoService.Controllers;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -13,12 +14,16 @@ namespace MiniCRM.Tests.TodoService;
 public class TodosControllerTests
 {
     private readonly ITodoApiClient _api = Substitute.For<ITodoApiClient>();
+    private readonly ICacheService _cache = Substitute.For<ICacheService>();
     private readonly ILogger<TodosController> _logger = Substitute.For<ILogger<TodosController>>();
     private readonly TodosController _sut;
 
     public TodosControllerTests()
     {
-        _sut = new TodosController(_api, _logger);
+        // Cache always returns null (miss) so tests exercise the real API path
+        _cache.GetAsync<TodoListResponse>(Arg.Any<string>(), Arg.Any<CancellationToken>())
+              .Returns((TodoListResponse?)null);
+        _sut = new TodosController(_api, _cache, _logger);
     }
 
     // --- GetList ---
