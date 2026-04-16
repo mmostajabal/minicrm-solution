@@ -13,10 +13,13 @@ minicrm-mcp/          ← Node.js MCP Server (12 tools)
      ▼
 minicrm-gateway/      ← C# ASP.NET Core 8 API Gateway  :5080
      │ HTTP
-     ├──► MiniCRM.ContactService  :5081  ──► miniCRM REST API (HTTPS)
-     ├──► MiniCRM.ProjectService  :5082  ──► miniCRM REST API (HTTPS)
-     ├──► MiniCRM.TodoService     :5083  ──► miniCRM REST API (HTTPS)
-     └──► MiniCRM.InvoiceService  :5084  ──► miniCRM REST API (HTTPS)
+     ├──► MiniCRM.ContactService  :5081  ──► Redis :6379 (60s cache)
+     ├──► MiniCRM.ProjectService  :5082  ──► Redis :6379 (60s cache)
+     ├──► MiniCRM.TodoService     :5083  ──► Redis :6379 (60s cache)
+     └──► MiniCRM.InvoiceService  :5084  ──► Redis :6379 (60s cache)
+                                                │ cache miss
+                                                ▼
+                                         miniCRM REST API (HTTPS)
 
            OR (for testing without a real account)
 
@@ -32,7 +35,8 @@ Install all of the following before running the application:
 | [Node.js](https://nodejs.org) | 18+ | https://nodejs.org/en/download | Choose **LTS** Windows x64 Installer |
 | [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) | 8.0+ | https://dotnet.microsoft.com/download/dotnet/8.0 | Choose **SDK** (not Runtime) x64 |
 | [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0+ | https://dotnet.microsoft.com/download/dotnet/10.0 | Required for VS Code Test Explorer only |
-| [Claude Desktop](https://claude.ai/download) | latest | https://claude.ai/download | Windows version |
+| [Claude Desktop](https://claude.ai/download) | latest | https://claude.ai/download | Windows version — optional (see note below) |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | latest | https://www.docker.com/products/docker-desktop/ | Required for Docker mode (includes Redis) |
 | [Git](https://git-scm.com/download/win) | any | https://git-scm.com/download/win | To clone this repository |
 | miniCRM account | Professional | https://www.minicrm.hu | Requires REST API add-on (or use Mock API) |
 
@@ -496,6 +500,50 @@ You can still run and test all services on Linux:
 - Use Docker: `docker compose --profile mock --env-file docker.env up -d --build`
 - Test via Swagger: http://localhost:5080/swagger (authorize with `minicrm-gateway-2026-secure-key`)
 - Or call the REST API directly with `curl` or any HTTP client
+
+---
+
+## Redis caching
+
+All four microservices use **Redis** as a caching layer to reduce calls to the miniCRM API and stay within the 60 requests/minute rate limit.
+
+### How it works
+
+| Operation | Behaviour |
+|---|---|
+| `GET` (search, get by ID) | Checks Redis first — returns cached result if found (cache hit) |
+| Cache miss | Calls miniCRM API, stores result in Redis for 60 seconds |
+| `POST` / `PUT` / `PATCH` | Calls miniCRM API, then clears the relevant cache prefix |
+| Redis unavailable | Falls through silently — the app keeps working via the real API |
+
+### Cache keys
+
+| Service | Prefix |
+|---|---|
+| ContactService | `contacts:` |
+| ProjectService | `projects:` |
+| TodoService | `todos:` |
+| InvoiceService | `invoices:` |
+
+### Running Redis
+
+**With Docker** (recommended — Redis starts automatically):
+```bash
+docker compose --profile mock --env-file docker.env up -d --build
+```
+Redis runs as `redis:7-alpine` on port `6379`.
+
+**Without Docker** (manual mode):  
+Install Redis locally or run it via Docker separately:
+```bash
+docker run -d -p 6379:6379 redis:7-alpine
+```
+Then add to each service's `appsettings.json`:
+```json
+"Redis": {
+  "Url": "localhost:6379"
+}
+```
 
 ---
 

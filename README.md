@@ -13,10 +13,13 @@ minicrm-mcp/          ← Node.js MCP Server (12 eszköz)
      ▼
 minicrm-gateway/      ← C# ASP.NET Core 8 API Gateway  :5080
      │ HTTP
-     ├──► MiniCRM.ContactService  :5081  ──► miniCRM REST API (HTTPS)
-     ├──► MiniCRM.ProjectService  :5082  ──► miniCRM REST API (HTTPS)
-     ├──► MiniCRM.TodoService     :5083  ──► miniCRM REST API (HTTPS)
-     └──► MiniCRM.InvoiceService  :5084  ──► miniCRM REST API (HTTPS)
+     ├──► MiniCRM.ContactService  :5081  ──► Redis :6379 (60s cache)
+     ├──► MiniCRM.ProjectService  :5082  ──► Redis :6379 (60s cache)
+     ├──► MiniCRM.TodoService     :5083  ──► Redis :6379 (60s cache)
+     └──► MiniCRM.InvoiceService  :5084  ──► Redis :6379 (60s cache)
+                                                │ cache miss
+                                                ▼
+                                         miniCRM REST API (HTTPS)
 
            VAGY (valós fiók nélküli teszteléshez)
 
@@ -32,7 +35,8 @@ Az alkalmazás futtatása előtt telepítsd az összes alábbi szoftvert:
 | [Node.js](https://nodejs.org) | 18+ | https://nodejs.org/en/download | Válaszd az **LTS** Windows x64 Installer-t |
 | [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) | 8.0+ | https://dotnet.microsoft.com/download/dotnet/8.0 | Az **SDK**-t válaszd (nem a Runtime-ot) x64 |
 | [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0+ | https://dotnet.microsoft.com/download/dotnet/10.0 | Csak VS Code Test Explorer használatához kell |
-| [Claude Desktop](https://claude.ai/download) | legfrissebb | https://claude.ai/download | Windows verzió |
+| [Claude Desktop](https://claude.ai/download) | legfrissebb | https://claude.ai/download | Windows verzió — opcionális (lásd lent) |
+| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | legfrissebb | https://www.docker.com/products/docker-desktop/ | Docker módhoz szükséges (Redis-t is tartalmaz) |
 | [Git](https://git-scm.com/download/win) | bármely | https://git-scm.com/download/win | A repository klónozásához |
 | miniCRM fiók | Professional | https://www.minicrm.hu | REST API add-on szükséges (vagy Mock API) |
 
@@ -492,6 +496,50 @@ Az összes service-t futtathatod és tesztelheted Linuxon:
 - Docker segítségével: `docker compose --profile mock --env-file docker.env up -d --build`
 - Tesztelés Swaggerrel: http://localhost:5080/swagger (hitelesítés: `minicrm-gateway-2026-secure-key`)
 - Vagy közvetlenül REST API-n keresztül `curl`-lel vagy bármilyen HTTP kliensekkel
+
+---
+
+## Redis gyorsítótár (cache)
+
+Mind a négy mikroszolgáltatás **Redis**-t használ gyorsítótárként, hogy csökkentse a miniCRM API hívások számát és a percenkénti 60 kérés limit alatt maradjon.
+
+### Működés
+
+| Művelet | Viselkedés |
+|---|---|
+| `GET` (keresés, lekérdezés ID alapján) | Először Redis-t ellenőriz — ha megtalálható, azonnal visszaadja (cache hit) |
+| Cache miss | Meghívja a miniCRM API-t, az eredményt 60 másodpercre eltárolja Redis-ben |
+| `POST` / `PUT` / `PATCH` | Meghívja a miniCRM API-t, majd törli az érintett cache prefixet |
+| Redis nem elérhető | Csendesen átugorja — az alkalmazás tovább működik a valós API-n keresztül |
+
+### Cache kulcsok
+
+| Service | Prefix |
+|---|---|
+| ContactService | `contacts:` |
+| ProjectService | `projects:` |
+| TodoService | `todos:` |
+| InvoiceService | `invoices:` |
+
+### Redis indítása
+
+**Dockerrel** (ajánlott — Redis automatikusan elindul):
+```bash
+docker compose --profile mock --env-file docker.env up -d --build
+```
+A Redis `redis:7-alpine` képként fut a `6379`-es porton.
+
+**Docker nélkül** (kézi mód):  
+Telepítsd a Redis-t lokálisan, vagy indítsd el Dockerrel külön:
+```bash
+docker run -d -p 6379:6379 redis:7-alpine
+```
+Majd add hozzá minden service `appsettings.json` fájljához:
+```json
+"Redis": {
+  "Url": "localhost:6379"
+}
+```
 
 ---
 
