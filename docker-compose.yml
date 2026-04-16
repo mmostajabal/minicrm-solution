@@ -85,6 +85,16 @@ services:
       - invoice-service
     restart: unless-stopped
 
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - gateway
+    restart: unless-stopped
+
   mock-api:
     build:
       context: .

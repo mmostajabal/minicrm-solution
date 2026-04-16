@@ -11,6 +11,9 @@ Claude Desktop
 minicrm-mcp/          ← Node.js MCP Server (12 tools)
      │ HTTP + X-Gateway-Key
      ▼
+Nginx :80             ← reverse proxy / rate limiter
+     │
+     ▼
 minicrm-gateway/      ← C# ASP.NET Core 8 API Gateway  :5080
      │ HTTP
      ├──► MiniCRM.ContactService  :5081  ──► Redis :6379 (60s cache)
@@ -344,7 +347,7 @@ docker compose --env-file docker.env ps
 
 ### Step 2: Verify in Swagger
 
-Open http://localhost:5080/swagger in your browser.
+Open http://localhost/swagger in your browser (via Nginx on port 80).
 
 Click the **Authorize** button (top right), enter the Gateway API key:
 ```
@@ -500,6 +503,22 @@ You can still run and test all services on Linux:
 - Use Docker: `docker compose --profile mock --env-file docker.env up -d --build`
 - Test via Swagger: http://localhost:5080/swagger (authorize with `minicrm-gateway-2026-secure-key`)
 - Or call the REST API directly with `curl` or any HTTP client
+
+---
+
+## Nginx reverse proxy
+
+Nginx sits in front of the API Gateway as a reverse proxy and rate limiter.
+
+| Feature | Detail |
+|---|---|
+| Entry point | http://localhost (port 80) |
+| Rate limiting | 60 requests/minute per IP — matches miniCRM API limit |
+| Health check | http://localhost/health |
+| Swagger UI | http://localhost/swagger |
+| Logs | Access and error logs inside the container |
+
+Nginx starts automatically with Docker — no extra configuration needed.
 
 ---
 

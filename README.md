@@ -11,6 +11,9 @@ Claude Desktop
 minicrm-mcp/          ← Node.js MCP Server (12 eszköz)
      │ HTTP + X-Gateway-Key
      ▼
+Nginx :80             ← reverse proxy / rate limiter
+     │
+     ▼
 minicrm-gateway/      ← C# ASP.NET Core 8 API Gateway  :5080
      │ HTTP
      ├──► MiniCRM.ContactService  :5081  ──► Redis :6379 (60s cache)
@@ -340,7 +343,7 @@ docker compose --env-file docker.env ps
 
 ### 2. lépés: Ellenőrzés Swaggerben
 
-Nyisd meg a http://localhost:5080/swagger oldalt a böngészőben.
+Nyisd meg a http://localhost/swagger oldalt a böngészőben (Nginx-en keresztül, 80-as port).
 
 Kattints az **Authorize** gombra (jobb felül), add meg a Gateway API kulcsot:
 ```
@@ -496,6 +499,22 @@ Az összes service-t futtathatod és tesztelheted Linuxon:
 - Docker segítségével: `docker compose --profile mock --env-file docker.env up -d --build`
 - Tesztelés Swaggerrel: http://localhost:5080/swagger (hitelesítés: `minicrm-gateway-2026-secure-key`)
 - Vagy közvetlenül REST API-n keresztül `curl`-lel vagy bármilyen HTTP kliensekkel
+
+---
+
+## Nginx reverse proxy
+
+Az Nginx a Gateway előtt helyezkedik el, reverse proxyként és rate limiterként működik.
+
+| Funkció | Részlet |
+|---|---|
+| Belépési pont | http://localhost (80-as port) |
+| Rate limiting | 60 kérés/perc IP-nként — megegyezik a miniCRM API limitjével |
+| Health check | http://localhost/health |
+| Swagger UI | http://localhost/swagger |
+| Logok | Access és error logok a containeren belül |
+
+Az Nginx automatikusan elindul Dockerrel — nincs szükség extra konfigurációra.
 
 ---
 
